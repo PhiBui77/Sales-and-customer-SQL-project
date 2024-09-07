@@ -43,6 +43,8 @@ set invoice_date = DATE(SUBSTR(invoice_date,7,4) ||'-'|| SUBSTR(invoice_date,4,2
 
 PRAGMA table_info(sales_data);
 
+1. What is the total revenue per shopping mall and how does it vary between years and months? 
+
 -- What is the total sales revenue per shopping mall?
 
 SELECT shopping_mall,
@@ -68,6 +70,8 @@ SUM(quantity * price) as total_revenue,
 strftime('%Y-%m',invoice_date) as year_month 
 FROM sales_data
 GROUP BY 1,3;
+
+2. What are the total sales revenue per category across different shopping malls?
 
 -- What is the total sales revenue per category 
 
@@ -103,7 +107,7 @@ SUM(price * quantity) AS total_revenue
 FROM sales_data
 GROUP BY category, shopping_mall;
 
--- What is the spending habit? Does it vary by age/gender? 
+3. How does customer spending vary by age group and gender?
 
 SELECT
 c.age,
@@ -116,13 +120,13 @@ GROUP BY
 c.age,
 c.gender;
 
--- What is the most common payment method? 
+4. Which payment method are most commonly used and does it vary by age and gender?
 
 SELECT payment_method, COUNT(*) as paymentmethod_count
 FROM customer_data
 GROUP BY payment_method;
 
--- Which category are preferred by different age and gender groups?
+5. Which category are preferred by different age groups and genders?
 
 SELECT 
 c.age,
