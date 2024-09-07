@@ -1,0 +1,164 @@
+-- data exploration
+
+SELECT *
+FROM sales_data
+LIMIT 10;
+
+SELECT *
+FROM customer_data
+LIMIT 10;
+
+SELECT DISTINCT customer_id
+FROM sales_data;
+
+-- Average age of customers?
+SELECT gender,
+AVG(age) as avg_age_customer
+FROM customer_data
+GROUP BY gender;
+
+-- checking data type for invoice_date column 
+
+PRAGMA table_info(sales_data);
+
+SELECT SUBSTR(invoice_date, 4, 7) AS month_year
+FROM sales_data
+ORDER BY 1;
+
+SELECT invoice_date 
+FROM sales_data;
+
+-- converting DD-MM-YYYY to YYYY-MM-DD and to a date format
+
+SELECT DATE(SUBSTR(invoice_date,7,4) ||'-'|| SUBSTR(invoice_date,4,2) || '-' || SUBSTR(invoice_date,1,2)) as formatted_date
+FROM sales_data;
+
+-- updating sales_data table 
+
+UPDATE sales_data 
+set invoice_date = DATE(SUBSTR(invoice_date,7,4) ||'-'|| SUBSTR(invoice_date,4,2) || '-' || SUBSTR(invoice_date,1,2));
+
+-- checking if invoice_date is in date format
+
+PRAGMA table_info(sales_data);
+
+-- What is the total sales revenue per shopping mall?
+
+SELECT shopping_mall,
+SUM(price * quantity) AS total_revenue
+FROM sales_data
+GROUP BY shopping_mall
+ORDER BY total_revenue DESC;
+
+-- sales per year
+
+SELECT shopping_mall,
+strftime('%Y',invoice_date) as year,
+SUM(price * quantity) AS total_revenue
+FROM sales_data
+GROUP BY shopping_mall, year
+ORDER BY total_revenue DESC;
+
+-- What are the monthly sales per shopping mall? 
+
+SELECT 
+shopping_mall,
+SUM(quantity * price) as total_revenue,
+strftime('%Y-%m',invoice_date) as year_month 
+FROM sales_data
+GROUP BY 1,3;
+
+-- What is the total sales revenue per category 
+
+SELECT 
+category,
+SUM(quantity * price) AS total_revenue_per_category
+FROM sales_data
+GROUP BY 1
+ORDER BY 2 DESC;
+
+-- Checking per year
+
+SELECT 
+category,
+SUM(quantity * price) AS total_revenue_per_category_2022
+FROM sales_data
+WHERE invoice_date BETWEEN '2022-01-01' AND '2022-12-31'
+GROUP BY 1
+ORDER BY 2 DESC;
+
+SELECT 
+category,
+SUM(quantity * price) AS total_revenue_per_category_2021
+FROM sales_data
+WHERE invoice_date BETWEEN '2021-01-01' AND '2021-12-31'
+GROUP BY 1
+ORDER BY 2 DESC;
+
+-- Total revenue by category and shopping mall
+
+SELECT category, shopping_mall,
+SUM(price * quantity) AS total_revenue
+FROM sales_data
+GROUP BY category, shopping_mall;
+
+-- What is the spending habit? Does it vary by age/gender? 
+
+SELECT
+c.age,
+c.gender,
+SUM(s.price * s.quantity) as total_spending
+FROM sales_data AS s
+JOIN customer_data AS c
+ON s.customer_id = c.customer_id
+GROUP BY 
+c.age,
+c.gender;
+
+-- What is the most common payment method? 
+
+SELECT payment_method, COUNT(*) as paymentmethod_count
+FROM customer_data
+GROUP BY payment_method;
+
+-- Which category are preferred by different age and gender groups?
+
+SELECT 
+c.age,
+c.gender,
+s.category,
+COUNT(s.category) as category_count
+FROM sales_data AS s
+INNER JOIN customer_data AS c
+ON s.customer_id = c.customer_id
+WHERE c.age IS NOT NULL
+GROUP BY 1,2,3
+ORDER BY 1,2,4 DESC;
+
+-- same query being answered as above but gropuing ages into age groups
+
+WITH age_group as (
+SELECT customer_id,
+age,
+CASE
+WHEN age BETWEEN 18 AND 26 THEN 'young adult'
+WHEN age BETWEEN 27 AND 34 THEN 'adult'
+WHEN age BETWEEN 35 AND 44 THEN 'early middle age'
+WHEN age BETWEEN 45 AND 65 THEN 'late middle age'
+ELSE 'senior'
+END AS age_group
+FROM customer_data
+)
+SELECT age_group.age_group,
+s.category,
+COUNT(s.category) as category_count
+FROM sales_data as s
+JOIN age_group
+ON s.customer_id = age_group.customer_id
+GROUP BY 1,2
+ORDER BY 1,3 DESC;
+
+
+
+
+
