@@ -12,6 +12,7 @@ SELECT DISTINCT customer_id
 FROM sales_data;
 
 -- Average age of customers?
+
 SELECT gender,
 AVG(age) as avg_age_customer
 FROM customer_data
